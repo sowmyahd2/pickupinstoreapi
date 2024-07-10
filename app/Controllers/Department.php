@@ -37,7 +37,7 @@ public function handleImageUpload(){
     $input = $request->all();
 var_dump($input);
 }
-    public function getDepartment(){
+    public function getDepartments(){
 
         $departmentModel = new DepartmentModel();
         $departments = $departmentModel->findAll();
