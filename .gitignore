@@ -1,0 +1,12 @@
+system/*
+tests/*
+writable/*
+builds
+composer.json
+composer.lock
+index.php
+license.txt
+phpunit.xml.dist
+Procfile
+README.md
+spark
