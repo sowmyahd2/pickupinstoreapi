@@ -32,7 +32,13 @@ $routes->setAutoRoute(true);
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
-
+$routes->group('api/v1', function($routes) {
+    $routes->get('departments', 'Department::getDepartments');
+    $routes->post('users', 'UserController::create');
+    $routes->get('users/(:num)', 'UserController::show/$1');
+    $routes->put('users/(:num)', 'UserController::update/$1');
+    $routes->delete('users/(:num)', 'UserController::delete/$1');
+});
 /*
  * --------------------------------------------------------------------
  * Additional Routing
