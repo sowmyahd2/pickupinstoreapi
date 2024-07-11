@@ -10,13 +10,13 @@ class Cart_Model extends Model
     {
         $db = db_connect();
 
-        return $db->table($city . 'dealerprice dp')
-            ->select('p.ProductName,p.ProductId,p.ProductCode,p.Image1,dp.SellingPrice,dp.MRP,p.DepartmentId,p.MainCategoryId,p.SubCategoryId,Group_concat(dps.SpecificationName) as SpecificationName ,Group_concat(dps.SpecificationValue) as SpecificationValue,da.ShopName,da.DealerId,dp.ReserveDays,dp.StorePrice,dp.FreeShipmentStatus,dp.LocalShipmentCost,dp.ZoneShipmentCost,dp.NationalShipmentCost,dlc.LocalMinOrderPrice,dlc.ZoneMinOrderPrice,dlc.NationalMinOrderPrice')
+        return $db->table($city.'dealerprice dp')
+            ->select('p.ProductName,p.ProductId,p.ProductCode,p.Image1,dp.SellingPrice,dp.MRP,p.DepartmentId,p.MainCategoryId,p.SubCategoryId,Group_concat(dps.SpecificationName) as SpecificationName ,Group_concat(dps.SpecificationValue) as SpecificationValue,da.ShopName,da.Adress,da.MobileNumber,da.ShopLogo,da.DealerId,dp.ReserveDays,dp.StorePrice,dp.FreeShipmentStatus,dp.LocalShipmentCost,dp.ZoneShipmentCost,dp.NationalShipmentCost,dlc.LocalMinOrderPrice,dlc.ZoneMinOrderPrice,dlc.NationalMinOrderPrice')
             ->join('products p', 'p.ProductId=dp.ProductId')
-            ->join($city . 'dealerproductspecification dps', 'dps.DealerPriceId = dp.DealerPriceId', 'left')
+            ->join($city.'dealerproductspecification dps', 'dps.DealerPriceId = dp.DealerPriceId', 'left')
             ->where('dp.DealerPriceId', $id)
-            ->join($city . 'dealeraccounts da', 'da.DealerId=dp.DealerId')
-            ->join($city . 'dealer_logistic_costdetails dlc', 'dlc.DealerId=da.DealerId and dlc.ActiveStatus=1', 'left')
+            ->join($city.'dealeraccounts da', 'da.DealerId=dp.DealerId')
+            ->join($city.'dealer_logistic_costdetails dlc', 'dlc.DealerId=da.DealerId and dlc.ActiveStatus=1', 'left')
             ->get()->getRow();
     }
 
@@ -26,8 +26,7 @@ class Cart_Model extends Model
         $table = "";
         switch ($type) {
             case 1:
-                
-                 $table = $city . "cart";
+                $table = $city . "cart";
                 break;
             case 2:
                 $table = $city . "H_cart";
@@ -39,6 +38,28 @@ class Cart_Model extends Model
 
         $db->table($table)->insert($item);
         return $db->insertID();
+    }
+    public function removeproduct($userid,$type,$pid,$city){
+       
+        $db = db_connect();
+        $table = "";
+        switch ($type) {
+            case 1:
+                $table = $city . "cart";
+                break;
+            case 2:
+                $table = $city . "H_cart";
+                break;
+            case 3:
+                $table = $city . "pickatstore_cart";
+                break;
+            
+    
+        }
+        $d=$db->table($table) 
+        ->where('userid', $userid)
+       ->where('DealerPriceId', $pid)->delete();
+
     }
     public function view($type, $city, $userId)
     {
@@ -57,7 +78,7 @@ class Cart_Model extends Model
         }
 
         return $db->table($table)
-            ->select('dp.DealerPriceId,p.ProductName,p.ProductId,p.ProductCode,p.Image1,dp.SellingPrice,dp.MRP,p.DepartmentId,p.MainCategoryId,p.SubCategoryId,Group_concat(dps.SpecificationName) as SpecificationName ,Group_concat(dps.SpecificationValue) as SpecificationValue,da.ShopName,da.DealerId,dp.ReserveDays,dp.StorePrice,dp.FreeShipmentStatus,dp.LocalShipmentCost,dp.ZoneShipmentCost,dp.NationalShipmentCost,dlc.LocalMinOrderPrice,dlc.ZoneMinOrderPrice,dlc.NationalMinOrderPrice,QuantityPurchased')
+            ->select('p.ProductName,p.ProductId,p.ProductCode,p.Image1,dp.SellingPrice,dp.MRP,p.DepartmentId,p.MainCategoryId,p.SubCategoryId,Group_concat(dps.SpecificationName) as SpecificationName ,Group_concat(dps.SpecificationValue) as SpecificationValue,da.ShopName,da.Adress,da.ShopLogo,da.MobileNumber,da.DealerId,dp.ReserveDays,dp.StorePrice,dp.FreeShipmentStatus,dp.LocalShipmentCost,dp.ZoneShipmentCost,dp.NationalShipmentCost,dlc.LocalMinOrderPrice,dlc.ZoneMinOrderPrice,dlc.NationalMinOrderPrice,QuantityPurchased, dp.DealerPriceId')
             ->join($city.'dealerprice dp', 'dp.DealerPriceId=c.DealerPriceId')
             ->join('products p', 'p.ProductId=dp.ProductId')
             ->join($city . 'dealerproductspecification dps', 'dps.DealerPriceId = dp.DealerPriceId', 'left')
@@ -67,87 +88,4 @@ class Cart_Model extends Model
             ->groupBy('c.DealerPriceId')
             ->get()->getResult();
     }
-        public function pickupcartview($type, $city, $userId)
-    {
-        $db = db_connect();
-        $table = "";
-        switch ($type) {
-            case 1:
-                $table = $city . "cart c";
-                break;
-            case 2:
-                $table = $city . "H_cart c";
-                break;
-            case 3:
-                $table = $city . "pickatstore_cart c";
-                break;
-        }
-
-        return $db->table($table)
-            ->select('dp.DealerPriceId,p.ProductName,p.ProductId,p.ProductCode,p.Image1,dp.SellingPrice,dp.MRP,p.DepartmentId,p.MainCategoryId,p.SubCategoryId,da.ShopName,da.DealerId,dp.ReserveDays,dp.StorePrice,dp.FreeShipmentStatus,dp.LocalShipmentCost,dp.ZoneShipmentCost,dp.NationalShipmentCost,QuantityPurchased')
-            ->join($city.'dealerprice dp', 'dp.DealerPriceId=c.DealerPriceId')
-            ->join('products p', 'p.ProductId=dp.ProductId')
-     
-            ->where('c.UserId', $userId)
-            ->join($city . 'dealeraccounts da', 'da.DealerId=dp.DealerId')
-          
-            ->groupBy('c.DealerPriceId')
-            ->get()->getResult();
-    }
-    public function getreserverdays($userId,$city){
-           $db = db_connect();
-        $table = $city . "pickatstore_cart c";
-return $db->table($table)
-            ->select('min(dps.ReserveDays) as ReserveDays')
-             ->join($city . 'dealerprice dps', 'dps.DealerPriceId = c.DealerPriceId')
-            ->join('products p', 'p.ProductId=dps.ProductId')
-           
-            ->where('c.UserId', $userId)
-            ->join($city . 'dealeraccounts da', 'da.DealerId=dps.DealerId')
-            ->join($city . 'dealer_logistic_costdetails dlc', 'dlc.DealerId=da.DealerId and dlc.ActiveStatus=1', 'left')
-            ->groupBy('c.DealerPriceId')
-            ->get()->getRow();
-
-    }
-        public function getreciepeintdetail($userId,$city){
-           $db = db_connect();
-        $table = $city . "ps_order_recepients c";
-return $db->table($table)
-            ->select('c.*')
-             
-            
-           
-            ->where('c.UserId', $userId)
-            
-            ->get()->getRow();
-
-    }
-      public function getsellerdetail($type,$userId,$city){
-           $db = db_connect();
-        $table = "";
-        switch ($type) {
-            case 1:
-                $table = $city . "cart c";
-                break;
-            case 2:
-                $table = $city . "H_cart c";
-                break;
-            case 3:
-                $table = $city . "pickatstore_cart c";
-                break;
-        }
-
-      return $db->table($table)
-            ->select('da.*')
-             ->join($city . 'dealerprice dps', 'dps.DealerPriceId = c.DealerPriceId')
-            ->join('products p', 'p.ProductId=dps.ProductId')
-            ->where('c.UserId', $userId)
-            ->join($city . 'dealeraccounts da', 'da.DealerId=dps.DealerId')
-            ->join($city . 'dealer_logistic_costdetails dlc', 'dlc.DealerId=da.DealerId and dlc.ActiveStatus=1', 'left')
-            ->groupBy('da.DealerId')
-            ->get()->getResult();
-          
-
-}
-
 }

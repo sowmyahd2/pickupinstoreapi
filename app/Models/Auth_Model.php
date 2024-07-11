@@ -6,28 +6,16 @@ class Auth_Model extends Model
 {
 function login($email,$password)
     {
-        $pass =hash( "sha256",$password);
+        $pass=hash('sha256', $password);
+       
         $db = db_connect();
         $user = $db->table('useraccounts')
-		    ->where('EmailId',$email)
+		->where('EmailId',$email)
         ->where('Password',$pass)
         ->where('SignUpComplete',1)
-	      ->get()->getRow();
+	   ->get()->getRow();
       if($user){
                 return $user;
-      }
-      return false;
-    }
-    function emaillogin($email)
-    {
-     //   $pass =hash( "sha256",$password);
-        $db = db_connect();
-        $user = $db->table('useraccounts')
-		    ->where('EmailId',$email)
-   
-	      ->get()->getRow();
-      if($user){
-        return $user;
       }
       return false;
     }
