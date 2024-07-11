@@ -35,7 +35,7 @@ class Department extends BaseController
     }
 public function handleImageUpload(){
     $input = $request->all();
-var_dump($input);
+
 }
     public function getDepartments(){
 
