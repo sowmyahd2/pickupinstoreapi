@@ -34,9 +34,7 @@ $routes->setAutoRoute(true);
 $routes->get('/', 'Home::index');
 $routes->group('api/v1', function($routes) {
     $routes->get('departments', 'Department::getDepartments');
-    $routes->post('users', 'UserController::create');
-    $routes->get('users/(:num)', 'UserController::show/$1');
-    $routes->put('users/(:num)', 'UserController::update/$1');
+   
     $routes->delete('users/(:num)', 'UserController::delete/$1');
 });
 /*
