@@ -6,7 +6,7 @@
 .DS_Store
 .AppleDouble
 .LSOverride
-app/Config/*
+
 # OS X Thumbnails
 ._*
 
