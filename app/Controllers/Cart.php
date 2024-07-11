@@ -17,91 +17,138 @@ class Cart extends BaseController
     use ResponseTrait;
     function index()
     {
-        
-            $user=2910;
+        $token = getBearerToken();
+        if ($token !== null) {
+            $user = JWT::decode($token, JWT_KEY,array('HS256'));
             if ($user) {
                 $data = $this->request->getJSON();
-                
-                die();
+                $cityName = $data->city;
+                $qty = $data->qty;
+                $city = $cityName == "mysore" ? "" : $cityName . "_";
+                $dealerPriceId = $data->dealerPriceId;
+                $type = $data->type;
 
-                foreach($data as $product){
-                        $cityName = $product->city;
-                        $qty = $product->qty;
-                        $city = $cityName == "mysuru" ? "" : $cityName . "_";
-                        $type = $product->cartType;
-                        $cartModel = new Cart_Model();
-                        $items = array(
-                            //'UserId' => $user->userId,
-                            'UserId' =>$user,
-                            'ProductId' => $product->productId,
-                            'ProductName' => $product->productName,
-                            'Price' => $product->price,
-                            'QuantityPurchased' => $product->qty,
-                            'DealerId' => $product->DealerId,
-                            'DealerPriceId' =>$product->DealerPriceId,
-                            'AddToCartTime' => date('Y-m-d h:i:s'),
-                        );
-                        $cartModel->add($items, $type, $city); 
-
+                $cartModel = new Cart_Model();
+                $product = $cartModel->getProductDetali($dealerPriceId, $city);
+                $items = array(
+                    'UserId' => $user->userId,
+                    'ProductId' => $product->ProductId,
+                    'ProductName' => $product->ProductName,
+                    'Price' => $product->SellingPrice,
+                    'QuantityPurchased' => $qty,
+                    'DealerId' => $product->DealerId,
+                    'DealerPriceId' => $dealerPriceId,
+                    'AddToCartTime' => date('Y-m-d h:i:s'),
+                );
+                $cartModel->add($items, $type, $city);
+                $cart = $cartModel->view($type,$city,$user->userId);
+                $productArray = [];
+                foreach($cart as $product){
+                    $item = array(
+                        "ProductId" => $product->ProductId,
+                        "ProductName" => $product->ProductName,
+                        "DepartmentId" => $product->DepartmentId,
+                        "MainCategoryId" => $product->MainCategoryId,
+                        "SubCategoryId" => $product->SubCategoryId,
+                        "Qty" => $product->QuantityPurchased,
+                        "ProductCode" => $product->ProductCode,
+                        "thumb_image" => productImageUrl($product->DepartmentId, $product->MainCategoryId, $product->SubCategoryId, 'thumbs', 1, $product->Image1),
+                        "SpecificationName" =>$product->SpecificationName,
+                        "SellingPrice" => $product->SellingPrice,
+                        "MRP" => $product->MRP,
+                        "SpecificationValue" => $product->SpecificationValue,
+                        "ShopName" => $product->ShopName,
+                        "DealerId" => $product->DealerId,
+                        "SubTotal" => $product->QuantityPurchased * $product->StorePrice,
+                        "ReserveDays" => $product->ReserveDays,
+                        "StorePrice" => $product->StorePrice,
+                        "FreeShipmentStatus" => $product->FreeShipmentStatus,
+                        "LocalShipmentCost" => $product->LocalShipmentCost,
+                        "ZoneShipmentCost" => $product->ZoneShipmentCost,
+                        "NationalShipmentCost" => $product->NationalShipmentCost,
+                        "LocalMinOrderPrice" => $product->LocalMinOrderPrice,
+                        "ZoneMinOrderPrice" => $product->ZoneMinOrderPrice,
+                        "NationalMinOrderPrice" => $product->NationalMinOrderPrice,
+                    );
+                    array_push($productArray, $item);
                 }
-               return $this->response->setJSON(success('cart details inserted successfuly', 200));
+                return $this->response->setJSON(success($productArray, 200));
             } else {
                 return $this->response->setJSON(success("", 403, "unauthorized"));
             }
-       
+        } else {
+            return $this->response->setJSON(success("", 403, "unauthorized"));
+        }
     }
+    function addtocart(){
+        $data = $this->request->getJSON();
+        $userId = $data->userId;
+    
+        if ($userId) {
+            $userId = $data->userId;
+            $cityName = $data->city;
+            $qty = $data->qty;
+           
+            $city = $cityName == "mysore" ? "" : $cityName . "_";
+            $dealerPriceId = $data->dealerPriceId;
+            $type = $data->type;
 
-function addtocart(){
-
-    $data = $this->request->getJSON();
-    $cart=$data->cartterm;
-    $user=2910;
-    if ($user) {
-    foreach ($cart as $cartitem) {
-        $cityName = $cartitem->city;
-        $qty = $cartitem->qty;
-        $city = $cityName == "mysuru" ? "" : $cityName . "_";
-        $type = $cartitem->cartType;
-        $cartModel = new Cart_Model();
-        $items = array(
-             'UserId' =>$user,
-            'ProductId' => $cartitem->productId,
-            'ProductName' => $cartitem->productName,
-            'Price' => $cartitem->price,
-            'QuantityPurchased' => $cartitem->qty,
-            'DealerId' => $cartitem->DealerId,
-            'DealerPriceId' =>$cartitem->DealerPriceId,
-            'AddToCartTime' => date('Y-m-d h:i:s'),
-        );
-        $cartModel->add($items, $type, $city); 
+            $cartModel = new Cart_Model();
+            $product = $cartModel->getProductDetali($dealerPriceId, $city);
+            $items = array(
+                'UserId' => $userId,
+                'ProductId' => $product->ProductId,
+                'ProductName' => $product->ProductName,
+                'Price' => $product->SellingPrice,
+                'QuantityPurchased' => $qty,
+                'DealerId' => $product->DealerId,
+                'DealerPriceId' => $dealerPriceId,
+                'AddToCartTime' => date('Y-m-d h:i:s'),
+            );
+            $cartModel->add($items, $type, $city);
+            $cart = $cartModel->view($type,$city,$userId);
+            $productArray = [];
+            foreach($cart as $product){
+                $item = array(
+                    "ProductId" => $product->ProductId,
+                    "ProductName" => $product->ProductName,
+                    "DepartmentId" => $product->DepartmentId,
+                    "MainCategoryId" => $product->MainCategoryId,
+                    "SubCategoryId" => $product->SubCategoryId,
+                    "Qty" => $product->QuantityPurchased,
+                    "ProductCode" => $product->ProductCode,
+                    "thumb_image" => productImageUrl($product->DepartmentId, $product->MainCategoryId, $product->SubCategoryId, 'thumbs', 1, $product->Image1),
+                    "SpecificationName" =>$product->SpecificationName,
+                    "SellingPrice" => $product->SellingPrice,
+                    "MRP" => $product->MRP,
+                    "SpecificationValue" => $product->SpecificationValue,
+                    "ShopName" => $product->ShopName,
+                    "DealerId" => $product->DealerId,
+                    "SubTotal" => $product->QuantityPurchased * $product->StorePrice,
+                    "ReserveDays" => $product->ReserveDays,
+                    "StorePrice" => $product->StorePrice,
+                    "FreeShipmentStatus" => $product->FreeShipmentStatus,
+                    "LocalShipmentCost" => $product->LocalShipmentCost,
+                    "ZoneShipmentCost" => $product->ZoneShipmentCost,
+                    "NationalShipmentCost" => $product->NationalShipmentCost,
+                    "LocalMinOrderPrice" => $product->LocalMinOrderPrice,
+                    "ZoneMinOrderPrice" => $product->ZoneMinOrderPrice,
+                    "NationalMinOrderPrice" => $product->NationalMinOrderPrice,
+                );
+                array_push($productArray, $item);
+            }
+            return $this->response->setJSON(success($productArray, 200));
+        } else {
+            return $this->response->setJSON(success("", 403, "unauthorized"));
+        }
     }
-        return $this->response->setJSON(success('cart details inserted successfulyy', 200));
-            
-            
-    }else {
-        return $this->response->setJSON(success("", 403, "unauthorized"));
-    }
-             
-}
-
-
-function view($type,$cityName,$userid){
-         $user=$userid;
-
-         $result = new stdClass();
+    function cartview($type,$cityName,$userid){
+      
+            $user = $userid;
             if ($user) {
                 $cartModel = new Cart_Model();
-                $city = $cityName == "mysuru" ? "" : $cityName . "_";
-              
-                $cart = $cartModel->view($type,$city, $user);
-             
-                if($type==3){
-                $result->reserverdays= $cartModel->getreserverdays($user,$city);
-                 $result->recipient= $cartModel->getreciepeintdetail($user,$city);
-                   
-                }
-                  $result->sellerdetail = $cartModel->getsellerdetail($type, $userid,$city);
-                  
+                $city = $cityName == "mysore" ? "" : $cityName . "_";
+                $cart = $cartModel->view($type,$city,$user);
                 $productArray = [];
                 foreach($cart as $product){
                     $item = array(
@@ -124,35 +171,35 @@ function view($type,$cityName,$userid){
                         "ReserveDays" => $product->ReserveDays,
                         "StorePrice" => $product->StorePrice,
                         "FreeShipmentStatus" => $product->FreeShipmentStatus,
-                        "LocalShipmentCost" => $product->LocalShipmentCost,
+                        "LocalShipmentCost" => $product->LocalShipmentCost, 
                         "ZoneShipmentCost" => $product->ZoneShipmentCost,
                         "NationalShipmentCost" => $product->NationalShipmentCost,
                         "LocalMinOrderPrice" => $product->LocalMinOrderPrice,
                         "ZoneMinOrderPrice" => $product->ZoneMinOrderPrice,
                         "NationalMinOrderPrice" => $product->NationalMinOrderPrice,
+                        "ShopName" => $product->ShopName,
+                        "ShopAddress" => $product->Adress,
+                        "ShopLogo" => $product->ShopLogo,
+                        "MobileNumber" => $product->MobileNumber
                     );
                     array_push($productArray, $item);
                 }
-                 $result->cartproducts=$productArray;
-                return $this->response->setJSON(success($result, 200));
+                return $this->response->setJSON(success($productArray, 200));
             }else {
                 return $this->response->setJSON(success("", 403, "unauthorized"));
             }
-        
+       
     }
-    function pickupcartview($type,$cityName,$userid){
-         $user=$userid;
 
-         $result = new stdClass();
+    
+    function view($type,$cityName){
+        $token = getBearerToken();
+        if ($token !== null) {
+            $user = JWT::decode($token, JWT_KEY,array('HS256'));
             if ($user) {
                 $cartModel = new Cart_Model();
-                $city = $cityName == "mysuru" ? "" : $cityName . "_";
-              
-                $cart = $cartModel->pickupcartview($type,$city, $user);
-             
-            
-               
-                  
+                $city = $cityName == "mysore" ? "" : $cityName . "_";
+                $cart = $cartModel->view($type,$city,$user->userId);
                 $productArray = [];
                 foreach($cart as $product){
                     $item = array(
@@ -160,23 +207,47 @@ function view($type,$cityName,$userid){
                         "DealerPriceId" => $product->DealerPriceId,
                         "ProductName" => $product->ProductName,
                         "DepartmentId" => $product->DepartmentId,
-                       "Qty" => $product->QuantityPurchased,
+                        "MainCategoryId" => $product->MainCategoryId,
+                        "SubcategoryId" => $product->SubCategoryId,
+                        "Qty" => $product->QuantityPurchased,
                         "SubTotal" => $product->QuantityPurchased * $product->StorePrice,
                         "ProductCode" => $product->ProductCode,
                         "thumb_image" => productImageUrl($product->DepartmentId, $product->MainCategoryId, $product->SubCategoryId, 'thumbs', 1, $product->Image1),
-                          "ShopName" => $product->ShopName,
+                        "SpecificationName" =>$product->SpecificationName,
+                        "SellingPrice" => $product->SellingPrice,
+                        "MRP" => $product->MRP,
+                        "SpecificationValue" => $product->SpecificationValue,
+                        "ShopName" => $product->ShopName,
                         "DealerId" => $product->DealerId,
                         "ReserveDays" => $product->ReserveDays,
                         "StorePrice" => $product->StorePrice,
-                       
+                        "FreeShipmentStatus" => $product->FreeShipmentStatus,
+                        "LocalShipmentCost" => $product->LocalShipmentCost, 
+                        "ZoneShipmentCost" => $product->ZoneShipmentCost,
+                        "NationalShipmentCost" => $product->NationalShipmentCost,
+                        "LocalMinOrderPrice" => $product->LocalMinOrderPrice,
+                        "ZoneMinOrderPrice" => $product->ZoneMinOrderPrice,
+                        "NationalMinOrderPrice" => $product->NationalMinOrderPrice,
+                        "ShopName" => $product->ShopName,
+                        "ShopAddress" => $product->Adress,
+                        "ShopLogo" => $product->ShopLogo,
+                        "MobileNumber" => $product->MobileNumber
                     );
                     array_push($productArray, $item);
                 }
-                 $result->cartproducts=$productArray;
-                return $this->response->setJSON(success($result, 200));
+                return $this->response->setJSON(success($productArray, 200));
             }else {
                 return $this->response->setJSON(success("", 403, "unauthorized"));
             }
-        
+        }else {
+            return $this->response->setJSON(success("", 403, "unauthorized"));
+        }
+    }
+    public function removeproduct($userid,$type,$cityName,$pid){
+        $cartModel = new Cart_Model();
+        $city = $cityName == "mysore" ? "" : $cityName . "_";
+        $cart = $cartModel->removeproduct($userid,$type,$pid,$city);
+        var_dump($cart);
+   
     }
 }
