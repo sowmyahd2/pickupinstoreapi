@@ -35,7 +35,7 @@ $routes->get('/', 'Home::index');
 $routes->group('api/v1', function($routes) {
     $routes->get('departments', 'Department::index');
    
-    $routes->delete('users/(:num)', 'UserController::delete/$1');
+  
 });
 /*
  * --------------------------------------------------------------------
