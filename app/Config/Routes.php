@@ -31,19 +31,7 @@ $routes->setAutoRoute(true);
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
-<<<<<<< HEAD
-<<<<<<< HEAD
-$routes->group('api/v1', function($routes) {
-    $routes->get('departments', 'Department::index');
-   
-  
-});
-/*
-=======
 $routes->get('/v1/department', 'Department::index');
-=======
-$routes->get('/v1/departments', 'Department::index');
->>>>>>> sowmya-dev
 $routes->get('/v1/brands', 'Brands::index');
 $routes->get('/v1/stores', 'Stores::index');
 $routes->get('/v1/products/mostview/(:segment)', 'Products::mostView/$1');
@@ -117,7 +105,6 @@ $routes->get('/v1/wishlist/(:segment)/(:segment)','Useraccount::wishlist/$1/$2')
 $routes->get('/v1/removewishlist/(:segment)/(:segment)/(:segment)','Useraccount::deletewhishlist/$1/$2/$3');
 $routes->get('/v1/globaldata','Globaldata::index');
 /**
->>>>>>> sowmya-dev
  * --------------------------------------------------------------------
  * Additional Routing
  * --------------------------------------------------------------------
