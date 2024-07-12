@@ -6,9 +6,9 @@ use App\Controllers\BaseController;
 use App\Models\Auth_Model;
 use App\Models\BrandModel;
 use CodeIgniter\API\ResponseTrait;
+use App\Models\UserModel;
 use \Firebase\JWT\JWT;
 use stdClass;
-
 
 helper('response');
 helper('cityonnet');
@@ -17,14 +17,19 @@ class Authenticate extends BaseController
     use ResponseTrait;
     function index()
     {
-        $data = $this->request->getJSON(); 
-        $email= $data->email;
-        $password= $data->password;
-
-
+           $usermodel = new UserModel();
+        $data = $this->request->getJSON();
+        $email = $data->email;
+        $password = $data->password;
+        $number=$data->number;
         $date = date('Y-m-d H:i:s');
         $authModel = new Auth_Model();
-        $user = $authModel->login($email, $password);
+        if($email!="" && $password!=""){
+            $user = $authModel->login($email, $password);  
+        }
+      else{
+$user=$usermodel->getuserdetail($number);
+      }
         if ($user) {
             $key = JWT_KEY;
             $payload = array(
@@ -41,7 +46,6 @@ class Authenticate extends BaseController
                 "Mobile" => $user->Mobile,
                 "Gender" => $user->Gender,
                 "Address" => $user->Address,
-                "status" => 'success',
                 "AccessToken" => $jwt
             );
             return $this->response->setJSON(success($resp, 200), 200);
@@ -49,28 +53,33 @@ class Authenticate extends BaseController
             return $this->response->setJSON(success("", 403, "invalid credentials"));
         }
     }
-
-
-    public function emailverify(){
-
-      $data = $this->request->getvar();
-      $email= $data['email'];
-       $authModel = new Auth_Model();
-      $user = $authModel->emaillogin($email);
-      if ($user) {
-         $resp = array (
-                
+    function logindetail($number)
+    {
+        
+      
+         $usermodel = new UserModel();
+   
+   
+  
+  
+        $date = date('Y-m-d H:i:s');
+        $authModel = new Auth_Model();
+        $user=$usermodel->getuserdetail($number);
+        if ($user) {
+            
+            
+            $resp = array (
+                "UserId" => $user->UserId,
+                "Username" => $user->UserName,
                 "EmailId" => $user->EmailId,
-                "status" => 'success',
-                
+                "Mobile" => $user->Mobile,
+                "Gender" => $user->Gender,
+                "Address" => $user->Address,
+               
             );
-        return $this->response->setJSON(success($resp, 200), 200);
-      } 
-      else {
-       return $this->response->setJSON(success("", 403, "invalid credentials"));
-      }
-	}
-
+            return $this->response->setJSON(success($resp, 200), 200);
+        } else {
+            return $this->response->setJSON(success("", 403, "invalid credentials"));
+        }
+    }
 }
-
-

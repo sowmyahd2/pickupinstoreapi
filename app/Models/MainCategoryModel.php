@@ -1,4 +1,4 @@
-<?php namespace App\Models;
+<?php
 
 use CodeIgniter\Model;
 
@@ -23,7 +23,6 @@ class MainCategoryModel extends Model{
         ->where('dp.QuantityAvailable > ',0)
         ->groupBy('b.BrandId')
         ->orderBy('b.BrandName', 'asc')
-        ->limit(20,0)
         ->get()->getResult();
     }
     public function getMainCategoryLocalBrandsById($id,$city)
@@ -79,13 +78,4 @@ class MainCategoryModel extends Model{
         ->orderBy('b.BrandName')
         ->groupBy('b.BrandId')->get()->getResult();
     }
-    function getmaincaterory($id){
-    	 $db = db_connect();
-		return $db->table("maincategory m")
-		->select("MainCategoryId,MainCategoryName")
-		
-		->where("DepartmentId",$id)
-		->orderBy('MainCategoryId')
-		 ->groupBy('MainCategoryId')->get()->getResult();
-	}
 }
