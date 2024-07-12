@@ -11,7 +11,10 @@ class DepartmentModel extends Model
         $db = db_connect();
         return $db->table("maincategory")->where("DepartmentId",$id)->orderBy('DepartmentId','asc')->get()->getResult();
     }
-
+    function getsubCategoryByDepartmentId($id){
+        $db = db_connect();
+        return $db->table("subcategory")->where("DepartmentId",$id)->orderBy('DepartmentId','asc')->get()->getResult();
+    }
     function getCategoryByBrandId($id,$city){
         $db = db_connect();
         return $db->table("maincategory m")->join($city.'brandcategorymapping bcm','m.MainCategoryId=bcm.MainCategoryId')->where("bcm.BrandId",$id)->groupBy('m.MainCategoryId')->orderBy('m.DepartmentId','asc')->get()->getResult();
@@ -52,9 +55,23 @@ class DepartmentModel extends Model
         ->where('UploadedDate BETWEEN DATE_SUB(NOW(), INTERVAL 270 DAY) AND NOW()')
         ->where("p.Arrivalstatus",1)
         ->groupBy("p.DepartmentId")
-        ->orderBy("DepartmentName")->get()->getResult();
+        ->orderBy("p.DepartmentId")->get()->getResult();
     }
-
+ function newdeal($city)
+    {
+        $db = db_connect();
+            $where = "dp.MRP > dp.StorePrice";
+        return $db->table("department d")
+        ->select("d.DepartmentName,d.DepartmentId")
+        ->join("products p","d.DepartmentId=p.DepartmentId")
+        ->join($city."dealerprice dp","p.ProductId=dp.ProductId")
+            ->where('dp.QuantityAvailable > ',0)
+            ->join('brands b', 'p.BrandId=b.BrandId')
+            ->where('dp.ActiveStatus',1)
+             ->where($where)
+               ->groupBy("p.DepartmentId")
+        ->orderBy("p.DepartmentId")->get()->getResult();
+    }
     function browsebyShop($id, $city){
         set_time_limit(120);
         $db = db_connect();

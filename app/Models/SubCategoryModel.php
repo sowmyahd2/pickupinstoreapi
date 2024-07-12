@@ -1,7 +1,6 @@
-<?php
+<?php namespace App\Models;
 
 use CodeIgniter\Model;
-
 class SubCategoryModel extends Model
 {
     protected $table         = 'subcateegory';
@@ -73,6 +72,7 @@ class SubCategoryModel extends Model
             ->where('dp.QuantityAvailable > ', 0)
             ->groupBy('dps.SpecificationValue')
             ->orderBy('dps.SpecificationValue', 'asc')
+            ->limit(20, 0)
             ->get()->getResult();
     }
     function browsebyShop($id, $city)
@@ -110,4 +110,12 @@ class SubCategoryModel extends Model
             ->orderBy('b.BrandName')
             ->groupBy('b.BrandId')->get()->getResult();
     }
+     function getsubcaterory($id){
+     	 $db = db_connect();
+		return $db->table("subcategory")
+		->select("SubCategoryId,SubCategoryName,MainCategoryId,DepartmentId")
+		->where("MainCategoryId",$id)
+		->orderBy('MainCategoryId')
+		 ->groupBy('SubCategoryId')->get()->getResult();
+	}
 }

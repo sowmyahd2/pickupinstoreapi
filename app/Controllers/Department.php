@@ -8,7 +8,9 @@ use CodeIgniter\API\ResponseTrait;
 use MainCategoryModel;
 use stdClass;
 use SubCategoryModel;
-
+header("Access-Control-Allow-Origin: *");
+  header("Access-Control-Allow-Methods: POST");
+  header("Access-Control-Allow-Headers: Origin, Methods, Content-Type");
 helper('response');
 helper('cityonnet');
 class Department extends BaseController
@@ -25,17 +27,17 @@ class Department extends BaseController
                 "DepartmentName" => $department->DepartmentName,
                 "Icons" => departmentIcon($department->Icons),
                 "VerticalId"=> $department->VerticalId,
-                "DepartmentGroupId" => $department->DepartmentGroupId
+                "DepartmentGroupId" => $department->DepartmentGroupId,
+                "DepartmentShortName"=>$department->DepartmentShortName,
             ));
         }
         return $this->response->setJSON(success($departmentArray, 200));
     }
-<<<<<<< HEAD
 public function handleImageUpload(){
     $input = $request->all();
-
+var_dump($input);
 }
-    public function getDepartments(){
+    public function getDepartment(){
 
         $departmentModel = new DepartmentModel();
         $departments = $departmentModel->findAll();
@@ -50,8 +52,6 @@ public function handleImageUpload(){
 
 
     }
-=======
->>>>>>> sowmya-dev
 
     public function category($departmentId)
     {
@@ -65,28 +65,37 @@ public function handleImageUpload(){
         }
         return $this->response->setJSON(success($categoryArray, 200));
     }
- public function categorylist($departmentId)
+    public function getsubcategory($departmentId)
+    {
+        $departmentModel = new DepartmentModel();
+        $categories = $departmentModel->getsubCategoryByDepartmentId($departmentId);
+
+     
+        return $this->response->setJSON(success($categories, 200));
+        
+        
+    }
+    public function getcategory($departmentId)
     {
         $departmentModel = new DepartmentModel();
         $categories = $departmentModel->getCategoryByDepartmentId($departmentId);
-        $categoryArray = new stdClass();
-        foreach($categories as $category){
-            $mainCategoryName = $category->MainCategoryName;
-            $mainCategories =$departmentModel->getDubCategoryByMainCategoryId($category->MainCategoryId);
-            $categoryArray->$mainCategoryName = $mainCategories;
+        $productArray=[];
+          foreach($categories as $category){
+  $mainCategories =count($departmentModel->getDubCategoryByMainCategoryId($category->MainCategoryId));
+$detail=[
+            "MainCategoryId"=>$category->MainCategoryId,
+            "MainCategoryName"=>$category->MainCategoryName,
+            "subcount"=>$mainCategories,
+          
+        ];
+            array_push($productArray,$detail);
         }
-        return $this->response->setJSON(success($categories, 200));
-    }
- public function subcategorylist($MainCategoryId)
-    {
-        $departmentModel = new DepartmentModel();
-        $categories = $departmentModel->getDubCategoryByMainCategoryId($MainCategoryId);
-        $categoryArray = new stdClass();
-       
-        return $this->response->setJSON(success($categories, 200));
+        
+     
+        return $this->response->setJSON(success($productArray, 200));
     }
     public function browseby($departmentId, $cityName){
-        $city = $cityName == "mysore" ? "" : $cityName."_";
+        $city = $cityName == "mysuru" ? "" : $cityName;
         $departmentModel = new DepartmentModel();
         $shop = $departmentModel->browsebyShop($departmentId,$city);
         $brand = $departmentModel->browsebyBrand($departmentId,$city);
@@ -96,7 +105,7 @@ public function handleImageUpload(){
         return $this->response->setJSON(success($response, 200));
     }
     public function mainCategoryBrowseBy($id, $cityName){
-        $city = $cityName == "mysore" ? "" : $cityName."_";
+        $city = $cityName == "mysuru" ? "" : $cityName;
         $maincategoryModel = new MainCategoryModel();
         $shop = $maincategoryModel->browsebyShop($id,$city);
         $brand = $maincategoryModel->browsebyBrand($id,$city);
@@ -106,7 +115,7 @@ public function handleImageUpload(){
         return $this->response->setJSON(success($response, 200));
     }
     public function subCategoryBrowseBy($id, $cityName){
-        $city = $cityName == "mysore" ? "" : $cityName."_";
+        $city = $cityName == "mysuru" ? "" : $cityName;
         $subcategoryModel = new SubCategoryModel();
         $shop = $subcategoryModel->browsebyShop($id,$city);
         $brand = $subcategoryModel->browsebyBrand($id,$city);
@@ -115,13 +124,4 @@ public function handleImageUpload(){
         $response->brand = $brand;
         return $this->response->setJSON(success($response, 200));
     }
-    public function getdeeplink(){
-        $response = [
-            'screen_id' => 1,
-            // ... other data ...
-        ];
-
-        // Return the response as JSON
-        return $this->respond($response, 200);
-}
 }
