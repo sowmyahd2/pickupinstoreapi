@@ -50,26 +50,59 @@ class Search_Model extends Model
     {
         $db = db_connect();
         if ($dept == "All") {
-            return $db->table($city . 'dealeraccounts da')
+            return $db->table($city . 'dealerprice dp')
             ->select("da.ShopName,da.DealerId,LandlineNumber,MobileNumber")
-            ->join($city . 'dealerprice dp', 'dp.DealerId = da.DealerId')
-            ->join('products p', 'p.ProductId = dp.ProductId')
+            ->join($city . 'dealeraccounts da', 'dp.DealerId = da.DealerId')
+            ->join('products p', 'dp.ProductId = p.ProductId')
             ->like('da.ShopName', $term, 'after')
             ->where('Activate', 1)
             ->where('dp.QuantityAvailable >', 0)
             ->groupBy("da.DealerId")
-            ->limit(5, 0)->get()->getResult();
+            ->orderBy('da.ShopName', 'asc')
+            ->get()->getResult();
         } else {
-            return $db->table($city . 'dealeraccounts da')
+            return $db->table($city . 'dealerprice dp')
             ->select("da.ShopName,da.DealerId,LandlineNumber,MobileNumber")
-            ->join($city . 'dealerprice dp', 'dp.DealerId = da.DealerId')
+            ->join($city . 'dealeraccounts da', 'dp.DealerId = da.DealerId')
             ->join('products p', 'p.ProductId = dp.ProductId')
             ->like('da.ShopName', $term, 'after')
             ->whereIn('p.DepartmentId', $dept)
             ->where('Activate', 1)
             ->where('dp.QuantityAvailable >', 0)
             ->groupBy("da.DealerId")
+             ->orderBy('da.ShopName', 'asc')
+
+            ->get()->getResult();
+        }
+    }
+   public function getproducts($term, $dept, $city)
+
+    {
+        $db = db_connect();
+        if ($dept == "All") {
+            return $db->table($city . 'dealeraccounts da')
+            ->select("p.ProductId,p.ProductName,Image1,DepartmentId,MainCategoryId,SubCategoryId")
+            ->join($city . 'dealerprice dp', 'dp.DealerId = da.DealerId')
+            ->join('products p', 'p.ProductId = dp.ProductId')
+            ->like('p.ProductName', $term, 'after')
+            ->where('Activate', 1)
+            ->where('dp.QuantityAvailable >', 0)
+            ->groupBy("p.ProductId")
             ->limit(5, 0)->get()->getResult();
+        } else {
+            return $db->table($city . 'dealeraccounts da')
+            ->select("p.ProductId,p.ProductName,Image1,DepartmentId,MainCategoryId,SubCategoryId")
+            ->join($city . 'dealerprice dp', 'dp.DealerId = da.DealerId')
+            ->join('products p', 'p.ProductId = dp.ProductId')
+            ->like('p,ProductName', $term, 'after')
+            ->whereIn('p.DepartmentId', $dept)
+            ->where('Activate', 1)
+            ->where('dp.QuantityAvailable >', 0)
+            ->groupBy("p.ProductId")
+             ->limit(5, 0)->get()->getResult();
+           
         }
     }
 }
+
+

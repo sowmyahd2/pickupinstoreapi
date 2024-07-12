@@ -17,47 +17,74 @@ class Stores extends BaseController
     {
         $data = $this->request->getJSON();
         $storeModel = new StoreModel();
-        $stores = $storeModel->findAll(30, 0);
+        $stores = $storeModel->findAll(9, 0);
         return $this->response->setJSON(success($stores, 200));
     }
-    public function catstore($cityName,$id)
-    {
-        $city = $cityName == "mysore" ? "" : $cityName . "_";
-        $storeModel = new StoreModel();
-        $response = new stdClass();
-        
-        $storeModel = new StoreModel();
-        $stores = $storeModel->catstore($city,$id);
-        return $this->response->setJSON(success($stores, 200));
-    }
-    public function mostView($cityName,$pincode)
+       public function index1($city,$id,$start=0,$end=24)
     {
         $data = $this->request->getJSON();
-        $city = $cityName == "mysore" ? "" : $cityName . "_";
+        $storeModel = new StoreModel();
+         $city = $city == "mysuru" ? "" : $city . "_";
+        $stores = $storeModel->getstoredepartments($id,$city);
+        return $this->response->setJSON(success($stores, 200));
+    }
+    public function departmentstore($city,$id){
+        $data = $this->request->getJSON();
+        $storeModel = new StoreModel();
+        $stores = $storeModel->getdepartmentstores($city,$id);
+        return $this->response->setJSON(success($stores, 200));
+    }
+public function serachedstores($city,$term){
+$data = $this->request->getJSON();
+        $storeModel = new StoreModel();
+        $stores = $storeModel->shoplist($city,$term);
+        $stores1 = $storeModel->searchedstores($city,$stores->DealerId);
+        return $this->response->setJSON(success($stores1, 200));
+}
+       public function storedepartment($id,$cityName)
+    
+    {
+    	$city = $cityName == "mysuru" ? "" : $cityName . "_";
+      
+        $storeModel = new StoreModel();
+  $stores= $storeModel->getstoredepartment($id, $city);
+        return $this->response->setJSON(success($stores, 200));
+    }
+    public function mostView($cityName)
+    {
+
+        $data = $this->request->getJSON();
+        $city = $cityName == "mysuru" ? "" : $cityName . "_";
         $mostViewModel = new DealerViewCountModel();
-        $stores = $mostViewModel->index($city,$pincode);
+        $stores = $mostViewModel->index($city);
         $storeArray = [];
         foreach ($stores as $store) {
             $item = array(
-                "ShopName"     => $store->ShopName,
-                "CityName"     => $store->CityName,
-                "Locality"     => $store->Locality,
-                "PinCode"      => $store->PinCode,
-                "ShopLogo"     => storeLogo($store->ShopLogo),
-                "DealerId"     => $store->DealerId,
-                "MobileNumber" => $store->MobileNumber
+                "ShopName" => $store->ShopName,
+                "CityName" => $store->CityName,
+                "Locality" => $store->Locality,
+                "PinCode" => $store->PinCode,
+                "ShopLogo" => storeLogo($store->ShopLogo),
+                "DealerId" => $store->DealerId,
             );
             array_push($storeArray, $item);
         }
         return $this->response->setJSON(success($storeArray, 200));
     }
+public function dealerdetail($dealerid,$city){
 
+$city = $city == "mysuru" ? "" : $city . "_";
+        $storeModel = new StoreModel();
+         $response = new stdClass();
+    $response->detail = $storeModel->getStoreDetail($dealerid, $city);
+    return $this->response->setJSON(success($response, 200));
+}
     public function storeProducts($id, $cityName)
     {
-        $city = $cityName == "mysore" ? "" : $cityName . "_";
+        $city = $cityName == "mysuru" ? "" : $cityName . "_";
         $storeModel = new StoreModel();
         $response = new stdClass();
-        $response->detail = $storeModel->getStoreDetail($id, $city);
+      //  $response->detail = $storeModel->getStoreDetail($id, $city);
         $categories = $storeModel->storefrontcategory($id, $city);
         $obj = new stdClass();
         $filter = new stdClass();
@@ -85,58 +112,99 @@ class Stores extends BaseController
             }
             $obj->$MainCategoryName = $productArray;
         }
-        $departments = $storeModel->storefrontDepartment($id, $city);
-        foreach ($departments as $d) {
-            $category = $storeModel->storefrontcategorybyDepartmentId($d->DepartmentId, $city, $id);
-            $departmentName = $d->DepartmentName;
-            $filter->$departmentName = $category;
-        }
+     //   $departments = $storeModel->storefrontDepartment($id, $city);
+      //  foreach ($departments as $d) {
+     //       $category = $storeModel->storefrontcategorybyDepartmentId($d->DepartmentId, $city, $id);
+     //       $departmentName = $d->DepartmentName;
+     //       $filter->$departmentName = $category;
+    //    }
         $response->products = $obj;
-        $response->filter = $filter;
+     //   $response->filter = $filter;
         return $this->response->setJSON(success($response, 200));
     }
-
+    public function storedepartmentProducts($id, $department, $cityName)
+    {
+        $city = $cityName == "mysuru" ? "" : $cityName . "_";
+        $storeModel = new StoreModel();
+        $response = new stdClass();
+        $response->detail = $storeModel->getStoreDetail($id, $city);
+        $categories = $storeModel->storefrontcategorybyDepartmentId($department, $city, $id);
+       
+        $obj = new stdClass();
+        $filter = new stdClass();
+        $products = $storeModel->storefrontdepartmentProducts($id, $department,$city);
+        $productArray = [];
+        foreach ($products as $product) {
+            $item = array(
+                "ProductId" => $product->ProductId,
+                "ProductName" => $product->ProductName,
+                "DepartmentId" => $product->DepartmentId,
+                "MainCategoryId" => $product->MainCategoryId,
+                "SubcategoryId" => $product->SubCategoryId,
+                "ProductCode" => $product->ProductCode,
+                "MRP" => $product->MRP,
+                "SellingPrice" => $product->SellingPrice,
+                "StorePrice" => $product->StorePrice,
+                "thumb_image" => productImageUrl($product->DepartmentId, $product->MainCategoryId, $product->SubCategoryId, 'thumbs', 1, $product->Image1),
+                "medium_image" => productImageUrl($product->DepartmentId, $product->MainCategoryId, $product->SubCategoryId, 'medium', 1, $product->Image1),
+                "large_image" => productImageUrl($product->DepartmentId, $product->MainCategoryId, $product->SubCategoryId, 'large', 1, $product->Image1),
+                "zoom_image" => productImageUrl($product->DepartmentId, $product->MainCategoryId, $product->SubCategoryId, 'zoom', 1, $product->Image1)
+            );
+            array_push($productArray, $item);
+        }
+        $response->products = $productArray;
+        $response->filter = array(
+            "category" => $categories,
+            "brands" => $storeModel->storefrontsubcategorybrands($id, $city, $department),
+        );
+        return $this->response->setJSON(success($response, 200));
+    }
     public function storeCategoryProducts($id, $maincategoryId, $cityName)
     {
-        $city = $cityName == "mysore" ? "" : $cityName . "_";
-        $limit = 24;
-        $offset = 0;
-        $brandIds = [];
-        $min =0;
-        $max = 0;
-        $sort="desc";
-        $catid=[];
-        if(isset($_GET['limit'])){
-            $limit = $this->request->getVar('limit');
-        }
-        if(isset($_GET['sort'])){
-            $sort = $this->request->getVar('sort');
-        }
-       
-        if(isset($_GET['offset'])){
-            $offset = $this->request->getVar('offset');
-        }
-        if(isset($_GET['brandIds']) &&  strlen(trim($this->request->getVar('brandIds')) > 0) ){
-            $brandIds = $this->request->getVar('brandIds');
-            $brandIds = explode(',', $brandIds);
-        } 
-        if(isset($_GET['catIds']) &&  strlen(trim($this->request->getVar('catIds')) > 0) ){
-            $catid = $this->request->getVar('catIds');
-            $catid = explode(',', $catid);
-        }     
-        if(isset($_GET['price'])){
-            $price = explode(',',$this->request->getVar('price'));
-            $min = $price[0];
-            $max = $price[1] == 0 ? 99999 : $price[1] ;
-            
-        }  
+        $city = $cityName == "mysuru" ? "" : $cityName . "_";
         $storeModel = new StoreModel();
         $response = new stdClass();
         $response->detail = $storeModel->getStoreDetail($id, $city);
         $categories = $storeModel->storefrontsubcategory($id, $city, $maincategoryId);
         $obj = new stdClass();
         $filter = new stdClass();
-        $products = $storeModel->storefrontMainCategoryProducts($id, $maincategoryId, $city, $limit, $offset, $brandIds,$catid, $min, $max,$sort);
+        $products = $storeModel->storefrontMainCategoryProducts($id, $maincategoryId, $city);
+        $productArray = [];
+        foreach ($products as $product) {
+            $item = array(
+                "ProductId" => $product->ProductId,
+                "ProductName" => $product->ProductName,
+                "DepartmentId" => $product->DepartmentId,
+                "MainCategoryId" => $product->MainCategoryId,
+                "SubcategoryId" => $product->SubCategoryId,
+                "ProductCode" => $product->ProductCode,
+                "MRP" => $product->MRP,
+                "SellingPrice" => $product->SellingPrice,
+                "StorePrice" => $product->StorePrice,
+                "thumb_image" => productImageUrl($product->DepartmentId, $product->MainCategoryId, $product->SubCategoryId, 'thumbs', 1, $product->Image1),
+                "medium_image" => productImageUrl($product->DepartmentId, $product->MainCategoryId, $product->SubCategoryId, 'medium', 1, $product->Image1),
+                "large_image" => productImageUrl($product->DepartmentId, $product->MainCategoryId, $product->SubCategoryId, 'large', 1, $product->Image1),
+                "zoom_image" => productImageUrl($product->DepartmentId, $product->MainCategoryId, $product->SubCategoryId, 'zoom', 1, $product->Image1)
+            );
+            array_push($productArray, $item);
+        }
+        $response->products = $productArray;
+        $response->filter = array(
+            "category" => $categories,
+            "brands" => $storeModel->storefrontsubcategorybrands($id, $city, $maincategoryId),
+        );
+        return $this->response->setJSON(success($response, 200));
+    }
+     public function storesubCategoryProducts($id, $maincategoryId, $cityName)
+    {
+        $city = $cityName == "mysuru" ? "" : $cityName . "_";
+        $storeModel = new StoreModel();
+        $response = new stdClass();
+        $response->detail = $storeModel->getStoreDetail($id, $city);
+        $categories = $storeModel->storefrontsubcategory($id, $city, $maincategoryId);
+        $obj = new stdClass();
+        $filter = new stdClass();
+        $products = $storeModel->storefrontSubCategoryProducts($id, $maincategoryId, $city);
         $productArray = [];
         foreach ($products as $product) {
             $item = array(
