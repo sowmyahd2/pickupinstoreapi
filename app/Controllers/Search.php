@@ -15,6 +15,7 @@ class Search extends BaseController
 
     function autocomplete(){
         $data = $this->request->getJSON();
+      
         $term = $data->term;
         $cityName = $data->city;
         $city = $cityName == "mysore" ? "" : $cityName . "_";

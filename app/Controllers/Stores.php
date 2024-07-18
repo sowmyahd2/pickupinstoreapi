@@ -63,6 +63,7 @@ class Stores extends BaseController
         $filter = new stdClass();
         foreach ($categories as $category) {
             $products = $storeModel->storefrontcategoryproducts($id, $category->MainCategoryId, $city);
+           
             $MainCategoryName = $category->MainCategoryName.'_'.$category->MainCategoryId;
             $productArray = [];
             foreach ($products as $product) {

@@ -22,6 +22,7 @@ class Authenticate extends BaseController
         $email = $data->email;
         $password = $data->password;
         $number=$data->number;
+      
         $date = date('Y-m-d H:i:s');
         $authModel = new Auth_Model();
         if($email!="" && $password!=""){
@@ -29,6 +30,7 @@ class Authenticate extends BaseController
         }
       else{
 $user=$usermodel->getuserdetail($number);
+
       }
         if ($user) {
             $key = JWT_KEY;

@@ -141,6 +141,7 @@ class StoreModel extends Model
             $sortcol="dp.SellingPrice";
             $sort=$sort;
         }
+      
         $db = db_connect();
         if(count($catid) > 0) {
             return $db->table($city.'dealerprice dp')
@@ -180,6 +181,7 @@ class StoreModel extends Model
         ->orderBy($sortcol, $sort)
         ->limit($limit,$offset)->get()->getResult();
         } else {
+            
             return $db->table($city.'dealerprice dp')
             ->select('p.DepartmentId,p.MainCategoryId,p.ProductId,p.SubCategoryId,p.Image1,p.UploadedDate,p.ProductName,p.ProductCode,dp.DealerId,MIN(dp.SellingPrice) AS SellingPrice,MIN(dp.StorePrice) AS StorePrice,p.BrandId,MIN(dp.MRP) as MRP,da.CityName,da.ShopName,mc.MainCategoryName,sc.SubCategoryName,dc.LocalMinOrderPrice')
             ->where('dp.DealerId', $id)
@@ -191,7 +193,7 @@ class StoreModel extends Model
             ->join('maincategory mc', 'p.MainCategoryId = mc.MainCategoryId')
             ->join('subcategory sc', 'sc.SubCategoryId=p.SubCategoryId', 'left')
             ->where('p.MainCategoryId', $maincategoryid)
-            ->where('dp.SellingPrice BETWEEN "'. $min . '" and "'. $max .'"')
+          
             ->groupBy('dp.ProductId')
             ->orderBy($sortcol, $sort)
             ->limit($limit,$offset)->get()->getResult();
